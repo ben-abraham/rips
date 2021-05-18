@@ -48,39 +48,39 @@ This proposal suggests combining steps 1-4, as well as 6-10 into a single user-i
 The following Sequence works for ravend RPC
 
 ===Create Buy Order===
-# listunspent - Find an exact UTXO for <quantity * price>
+# listunspent - Find an exact UTXO for "quantity" * "price"
 # createrawtransaction
-## vin: [{<UTXO>}]
-## vout: {<dest>:{"transfer":{"<asset>":<quantity>}}}
-# signrawtransaction sighash=SINGLE|ANYONECANPAY
+## vin: [{ rvn UTXO }]
+## vout: { "asset_dest": {"transfer": { "asset_name":quantity }}}
+# signrawtransaction "created_raw" sighash=SINGLE|ANYONECANPAY
 
 ===Create Sell Order===
-# listmyassets "" true - Find an exact UTXO for <quantity>
+# listmyassets "" true - Find an exact UTXO for "quantity"
 # createrawtransaction
-## vin: [{<UTXO>}]
-## vout: {<dest>:<quantity * price>}
-# signrawtransaction sighash=SINGLE|ANYONECANPAY
+## vin: [{ asset UTXO }]
+## vout: { "rvn_dest': quantity * price }
+# signrawtransaction "created_raw" sighash=SINGLE|ANYONECANPAY
 
-===Complete Buy Order===
-# decoderawtransaction <partial_tx>
+===Complete Buy Order (Selling) ===
+# decoderawtransaction "partial_tx"
 # Add the following to decoded tx
-## vout: {<dest>:<quantity * price>}
-## vout: {<change_addr>:{"transfer":{"<asset>":<UTXO_amount - quantity>}}} - If asset change needed
+## vin: *Enough VIN's to cover the full asset debit + fees*
+## vout: {"dest": quantity * price }
+## vout: {"change_addr":{"transfer":{"asset_name": UTXO_amount - quantity }}} - If asset change needed
 # [Jenky part] Repeat the following steps until approved by mempool
-# createrawtransaction <decoded_vin>, <decoded_vout>
-# fundrawtransaction <raw_tx>
-# combinerawtransaction ["<funded_tx>", "<partial_tx>"]
-# signrawtransaction <combined_tx>
+# createrawtransaction "decoded_vin", "decoded_vout"
+# combinerawtransaction ["raw_tx", "signed_partial_tx"]
+# signrawtransaction "combined_tx"
 # reduce payout by 0.0001 RVN, repeat
 
-===Complete Sell Order===
-# decoderawtransaction <partial_tx>
+===Complete Sell Order (Purchasing) ===
+# decoderawtransaction "partial_tx"
 # Add the following to decoded tx
-## vout: {<dest>:{"transfer":{"<asset>":<quantity>}}}
-# createrawtransaction <decoded_vin>, <decoded_vout>
-# fundrawtransaction <raw_tx> {"changePosition": 1}
-# combinerawtransaction ["<funded_tx>", "<partial_tx>"]
-# signrawtransaction <combined_tx>
+## vin: *Enough VIN's to cover the full debit + fees*
+## vout: {"dest": {"transfer": {"asset_name": quantity }}}
+# createrawtransaction "decoded_vin", "decoded_vout"
+# combinerawtransaction ["funded_tx", "partial_tx"]
+# signrawtransaction "combined_tx"
 
 Once the transaction has been signed, it can be presented to the user for verification before submission.
 
