@@ -50,26 +50,26 @@ The following Sequence works for ravend RPC
 ===Create Buy Order===
 # listunspent - Find an exact UTXO for "quantity" * "price"
 # createrawtransaction
-## vin: [{ rvn UTXO }]
-## vout: { "asset_dest": {"transfer": { "asset_name":quantity }}}
+## vin: &#91; (rvn UTXO) &#93;
+## vout: asset_dest: ("transfer": ( asset_name: quantity ) )
 # signrawtransaction "created_raw" sighash=SINGLE|ANYONECANPAY
 
 ===Create Sell Order===
 # listmyassets "" true - Find an exact UTXO for "quantity"
 # createrawtransaction
-## vin: [{ asset UTXO }]
-## vout: { "rvn_dest': quantity * price }
+## vin: &#91; (asset UTXO) &#93;
+## vout: rvn_dest: quantity * price
 # signrawtransaction "created_raw" sighash=SINGLE|ANYONECANPAY
 
 ===Complete Buy Order (Selling) ===
 # decoderawtransaction "partial_tx"
 # Add the following to decoded tx
 ## vin: *Enough VIN's to cover the full asset debit + fees*
-## vout: {"dest": quantity * price }
-## vout: {"change_addr":{"transfer":{"asset_name": UTXO_amount - quantity }}} - If asset change needed
+## vout: ("dest": quantity * price )
+## vout: ("change_addr": ("transfer": ("asset_name": UTXO_amount - quantity ))) - If asset change needed
 # [Jenky part] Repeat the following steps until approved by mempool
 # createrawtransaction "decoded_vin", "decoded_vout"
-# combinerawtransaction ["raw_tx", "signed_partial_tx"]
+# combinerawtransaction &#91; "raw_tx", "signed_partial_tx"&#93;
 # signrawtransaction "combined_tx"
 # reduce payout by 0.0001 RVN, repeat
 
@@ -77,9 +77,9 @@ The following Sequence works for ravend RPC
 # decoderawtransaction "partial_tx"
 # Add the following to decoded tx
 ## vin: *Enough VIN's to cover the full debit + fees*
-## vout: {"dest": {"transfer": {"asset_name": quantity }}}
+## vout: ("dest": ("transfer": ("asset_name": quantity )))
 # createrawtransaction "decoded_vin", "decoded_vout"
-# combinerawtransaction ["funded_tx", "partial_tx"]
+# combinerawtransaction &#91; "funded_tx", "partial_tx"&#93;
 # signrawtransaction "combined_tx"
 
 Once the transaction has been signed, it can be presented to the user for verification before submission.
